@@ -1,0 +1,8 @@
+{
+  "name": "unid-allinone",
+  "app_id": "6e1c1b75",
+  "type": "ionic-angular",
+  "integrations": {
+    "cordova": {}
+  }
+}

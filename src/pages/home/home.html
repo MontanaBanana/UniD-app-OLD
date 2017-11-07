@@ -1,0 +1,44 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>
+      National Park Service Sites
+    </ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content>
+	<ion-searchbar (ionInput)="getItems($event)"></ion-searchbar>
+	<ion-segment [(ngModel)]="sort_by">
+      <ion-segment-button value="name">
+        By Name
+      </ion-segment-button>
+	  <ion-segment-button value="state">
+        By State
+      </ion-segment-button>
+      <ion-segment-button value="type">
+        By Type
+      </ion-segment-button>
+    </ion-segment>
+
+<div [ngSwitch]="sort_by">
+  <ion-list *ngSwitchCase="'name'">
+	  <button ion-item *ngFor="let item of name_items" (click)="itemSelected(item)">
+		{{ item.title }}
+	  </button>
+  </ion-list>
+
+  <ion-list *ngSwitchCase="'state'">
+	  <button ion-item *ngFor="let item of state_items" (click)="itemSelected(item)">
+		{{ item.title }}
+	  </button>
+  </ion-list>
+  
+  <ion-list *ngSwitchCase="'type'">
+	  <button ion-item *ngFor="let item of type_items" (click)="itemSelected(item)">
+		{{ item.title }}
+	  </button>
+  </ion-list>
+</div>	
+	
+
+</ion-content>
