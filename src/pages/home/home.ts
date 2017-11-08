@@ -37,16 +37,32 @@ export class HomePage {
 		var projects = this.http.get('https://www.unidescription.org/project/npsProjects');
 		projects
 			.map(res => res.json())
-			.subscribe(data => {
+			.subscribe(
+			    data => {
+				window.localStorage.setItem('parklist-name', JSON.stringify(data.name));
 				this.name_items = data.name;
+				window.localStorage.setItem('parklist-state', JSON.stringify(data.state));
 				this.state_items = data.state;
+				window.localStorage.setItem('parklist-type', JSON.stringify(data.type));
 				this.type_items = data.type;
+				window.localStorage.setItem('parklist-cached-name', JSON.stringify(data.name));
 				this.cached_name_items = data.name;
+				window.localStorage.setItem('parklist-cached-state', JSON.stringify(data.state));
 				this.cached_state_items = data.state;
+				window.localStorage.setItem('parklist-cached-type', JSON.stringify(data.type));
 				this.cached_type_items = data.type;
-
 				console.log('my data: ', data);
-			});
+			    },
+			    err => {
+				this.name_items = JSON.parse(window.localStorage.getItem('parklist-name'));
+				this.state_items = JSON.parse(window.localStorage.getItem('parklist-state'));
+				this.type_items = JSON.parse(window.localStorage.getItem('parklist-type'));
+				this.cached_name_items = JSON.parse(window.localStorage.getItem('parklist-cached-name'));
+				this.cached_state_items = JSON.parse(window.localStorage.getItem('parklist-cached-state'));
+				this.cached_type_items = JSON.parse(window.localStorage.getItem('parklist-cached-type'));
+
+			    }
+			);
 	}
 	else {
 		this.name_items = this.cached_name_items;

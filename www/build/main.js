@@ -75,13 +75,26 @@ var HomePage = (function () {
             projects
                 .map(function (res) { return res.json(); })
                 .subscribe(function (data) {
+                window.localStorage.setItem('parklist-name', JSON.stringify(data.name));
                 _this.name_items = data.name;
+                window.localStorage.setItem('parklist-state', JSON.stringify(data.state));
                 _this.state_items = data.state;
+                window.localStorage.setItem('parklist-type', JSON.stringify(data.type));
                 _this.type_items = data.type;
+                window.localStorage.setItem('parklist-cached-name', JSON.stringify(data.name));
                 _this.cached_name_items = data.name;
+                window.localStorage.setItem('parklist-cached-state', JSON.stringify(data.state));
                 _this.cached_state_items = data.state;
+                window.localStorage.setItem('parklist-cached-type', JSON.stringify(data.type));
                 _this.cached_type_items = data.type;
                 console.log('my data: ', data);
+            }, function (err) {
+                _this.name_items = JSON.parse(window.localStorage.getItem('parklist-name'));
+                _this.state_items = JSON.parse(window.localStorage.getItem('parklist-state'));
+                _this.type_items = JSON.parse(window.localStorage.getItem('parklist-type'));
+                _this.cached_name_items = JSON.parse(window.localStorage.getItem('parklist-cached-name'));
+                _this.cached_state_items = JSON.parse(window.localStorage.getItem('parklist-cached-state'));
+                _this.cached_type_items = JSON.parse(window.localStorage.getItem('parklist-cached-type'));
             });
         }
         else {
@@ -325,7 +338,7 @@ var MyApp = (function () {
             // Okay, so the platform is ready and our plugins are available.
             // Here you can do any higher level native things you might need.
             statusBar.styleDefault();
-            splashScreen.hide();
+            //splashScreen.hide();
         });
     }
     return MyApp;
