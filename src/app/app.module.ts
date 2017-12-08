@@ -11,12 +11,14 @@ import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
 import { ProjectPage } from '../pages/project/project';
+import { IntroPage } from '../pages/intro/intro';
 
 @NgModule({
   declarations: [
     MyApp,
     HomePage,
-	ProjectPage
+	ProjectPage,
+    IntroPage
   ],
   imports: [
     BrowserModule,
@@ -34,7 +36,8 @@ import { ProjectPage } from '../pages/project/project';
   entryComponents: [
     MyApp,
     HomePage,
-	ProjectPage
+	ProjectPage,
+	IntroPage
   ],
   providers: [
     StatusBar,

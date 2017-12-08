@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
+import { ModalController, Modal, AlertController } from 'ionic-angular';
 import { Http, Response, BaseRequestOptions, RequestOptions, HttpModule, JsonpModule, Headers } from '@angular/http';
 import { Observable } from 'rxjs';
 
@@ -7,6 +8,7 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 
 import { ProjectPage } from '../project/project';
+import { IntroPage } from '../intro/intro';
 
 @Component({
   selector: 'page-home',
@@ -27,8 +29,17 @@ export class HomePage {
   
   sort_by: string = "name";
   
-  constructor(public navCtrl: NavController, public http: Http) {
+  constructor(public navCtrl: NavController, public http: Http, public modalCtrl: ModalController) {
     this.initializeItems();
+  }
+
+  ionViewDidEnter() {
+      if (window.localStorage.getItem('saw_intro') == '0') {
+            window.localStorage.setItem('saw_intro', '1');
+            let modal = this.modalCtrl.create(IntroPage);
+            //modal.fireOtherLifecycles = false;
+            modal.present();
+      }
   }
 
   initializeItems() {

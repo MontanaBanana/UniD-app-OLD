@@ -25198,3 +25198,8 @@ ion-navbar.toolbar {
     padding-top: calc(16px + 20px);
   }
 }
+
+page-intro img {
+  margin: auto;
+  display: block;
+}

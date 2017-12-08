@@ -17,18 +17,16 @@ export class ProjectPage {
   public url;
   public src;
 
+  ionViewDidEnter() {
+  }
+
+
   constructor(public navCtrl: NavController, public http: Http, public navParams: NavParams, public sanitizer: DomSanitizer) {
 
-
-
-
+  	this.src = 'Connect to the internet to download content.';
 	this.id = navParams.get("id");
         this.title = navParams.get("title");
-	this.src = this.sanitizer.bypassSecurityTrustHtml('&nbsp;');
-	console.log('setting the url');
-	//this.url = this.sanitizer.bypassSecurityTrustResourceUrl('https://www.unidescription.org/account/project/export/' + this.id);
 	
-	//console.log('before the call: ' + this.url);
 	var project = this.http.get('https://www.unidescription.org/account/project/export_json/' + this.id);
 		project
 			.map(res => res.json())
@@ -40,7 +38,12 @@ export class ProjectPage {
 			  },
 			  err => {
 				var html = window.localStorage.getItem(this.id);
-				this.src = this.sanitizer.bypassSecurityTrustHtml(html);
+				if (html.length > 100) {
+					this.src = this.sanitizer.bypassSecurityTrustHtml(html);
+				}
+				else {
+					this.src = "Ensure you are connected to the internet to download content.";
+				}
 			  }
 			);
 	
