@@ -1,5 +1,9 @@
-import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams } from 'ionic-angular';
+import { Component, OnInit, Input } from '@angular/core';
+import { IonicPage, NavController, NavParams, ModalController } from 'ionic-angular';
+import { ViewController } from "ionic-angular/index";
+import { ProjectPage } from "../project/project"
+
+import { Storage } from '@ionic/storage';
 
 /**
  * Generated class for the ComponentPage page.
@@ -13,14 +17,23 @@ import { IonicPage, NavController, NavParams } from 'ionic-angular';
   selector: 'page-component',
   templateUrl: 'component.html',
 })
-export class ComponentPage {
-    component;
+export class ComponentPage implements OnInit {
+  component: any;
 
-  constructor(public navCtrl: NavController, public navParams: NavParams) {
+  constructor(public navCtrl: NavController, public navParams: NavParams, private viewCtrl:ViewController, public modalController: ModalController, private storage: Storage) {
+      storage.get('component').then((val) => {
+          this.component = val;
+      });
   }
 
-  ngOnInit() {
 
+  ngOnInit() {
+	console.log(this.component);
+  }
+
+  dismissModal() {
+      this.storage.set('is_open', false);
+      this.viewCtrl.dismiss();
   }
 
   ionViewDidLoad() {

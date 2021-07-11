@@ -17,6 +17,8 @@ import { IntroPage } from '../pages/intro/intro';
 import { ComponentPage } from '../pages/component/component';
 import { SafePipe } from './pipes/safe';
 
+import { IonicStorageModule } from '@ionic/storage';
+
 @NgModule({
   declarations: [
     MyApp,
@@ -30,6 +32,7 @@ import { SafePipe } from './pipes/safe';
     BrowserModule,
 	HttpModule,
     IonicModule.forRoot(MyApp),
+    IonicStorageModule.forRoot(),
   ],
   bootstrap: [IonicApp],
   entryComponents: [

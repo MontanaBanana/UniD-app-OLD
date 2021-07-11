@@ -10,6 +10,7 @@ import { SafePipe } from '../../app/pipes/safe';
 import { Keyboard } from '@ionic-native/keyboard';
 import { Geolocation } from '@ionic-native/geolocation';
 import { ComponentPage } from '../component/component';
+import { Storage } from '@ionic/storage';
 
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
@@ -25,6 +26,9 @@ export class ProjectPage {
   public url;
   public src;
   public watch;
+  public watch_sub;
+  public last_watch;
+  public opened;
   public project;
   public loader;
   public sections1;
@@ -43,6 +47,18 @@ export class ProjectPage {
   scrollTop() {
      this.content.scrollToTop(400);
      document.getElementById("project_header").focus();
+  }
+
+  ionViewWillLeave() {
+    this.watch_sub.unsubscribe();
+    //this.storage.clear();
+  }
+
+  ionViewWillEnter() {
+    //if (this.watch) {
+    //    this.watch_sub.unsubscribe();
+   // }
+    //this.storage.clear();
   }
   
   ionViewDidEnter() {
@@ -136,18 +152,31 @@ console.log(title_bar.clientHeight);
     }
   }
 
-  showComponentModal(data) {
+  async showComponentModal(data) {
+	  const modal = await this.modalCtrl.create(ComponentPage);
+	  return await modal.present();
+      /*
     let modal = this.modalCtrl.create({
 		component: ComponentPage,
 		componentProps: {
 			component: data
 		}
 	});
+   */
+    //let modal = this.modalCtrl.create( ComponentPage );
     //modal.fireOtherLifecycles = false;
-    modal.present();
+    //modal.present();
   }
 
-  constructor(public navCtrl: NavController, public http: Http, public modalCtrl: ModalController, public geolocation: Geolocation, public navParams: NavParams, public sanitizer: DomSanitizer, public loadingCtrl: LoadingController, public keyboard: Keyboard) {
+  constructor(public navCtrl: NavController, public http: Http, public modalCtrl: ModalController, public geolocation: Geolocation, public navParams: NavParams, public sanitizer: DomSanitizer, public loadingCtrl: LoadingController, public keyboard: Keyboard, private storage: Storage) {
+
+    this.storage.clear();
+
+    this.sections1 = null;
+    this.sections2 = null;
+    this.sections3 = null;
+
+    this.opened = [];
 
   	this.src = 'Connect to the internet to download content.';
 	this.id = navParams.get("id");
@@ -161,23 +190,49 @@ console.log(title_bar.clientHeight);
 	
 	this.addDurations();
 
-    this.watch = this.geolocation.watchPosition();
-    this.watch.subscribe((data) => {
-       // data can be a set of coordinates, or an error (if an error occurred).
-       // data.coords.latitude
-       // data.coords.longitude
-	   if (this.sections1) {
-			for (let i = 0; i < this.sections1.length ; i++) {
-			   let comp = this.sections1[i];
-               let dist = this.distance(data.coords.latitude, data.coords.longitude, comp.latitude, comp.longitude, 'K') * 1000;
+    this.last_watch = new Date().getTime() / 1000;
 
-			   if (dist <= comp.gps_range) {
-				   this.showComponentModal(comp);
-			   }
-			}
-	   }
-        
-    });
+    this.storage.set('is_open', false);
+    if (!this.watch) {
+        this.watch = this.geolocation.watchPosition();
+        this.watch_sub = this.watch.subscribe((data) => {
+           let new_watch = new Date().getTime() / 1000;
+           if (new_watch - this.last_watch >= 3) {
+               // data can be a set of coordinates, or an error (if an error occurred).
+               // data.coords.latitude
+               // data.coords.longitude
+               storage.get('is_open').then((is_open) => {
+                   if (this.sections1 && !is_open) {
+                        for (let i = 0; i < this.sections1.length ; i++) {
+                           let comp = this.sections1[i];
+                           if (comp.latitude && comp.longitude) {
+                               let dist = this.distance(data.coords.latitude, data.coords.longitude, comp.latitude, comp.longitude, 'K') * 1000;
+                               console.log('=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=');
+                               console.log(data.coords.latitude);
+                               console.log(data.coords.longitude);
+                               console.log(comp.latitude);
+                               console.log(comp.longitude);
+                               console.log(dist);
+                               console.log(comp.gps_range);
+                               console.log('=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=');
+
+                               if (dist > 0 && dist <= comp.gps_range) {
+                                    if (!this.opened.includes(comp.id)) {
+                                       this.opened.push(comp.id);
+                                       this.storage.set('is_open', true);
+                                       this.storage.set('component', comp);
+                                       this.showComponentModal(comp);
+                                       i = this.sections1.length + 1;
+                                    }
+                               }
+                           }
+                        }
+                   }
+               });
+           }
+            
+        });
+    }
   }
 
 //:::  This routine calculates the distance between two points (given the     :::

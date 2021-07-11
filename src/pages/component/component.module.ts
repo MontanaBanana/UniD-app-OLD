@@ -9,5 +9,8 @@ import { ComponentPage } from './component';
   imports: [
     IonicPageModule.forChild(ComponentPage),
   ],
+  exports: [
+    ComponentPage,
+  ],
 })
 export class ComponentPageModule {}

@@ -1,15 +1,32 @@
 <!--
   Generated template for the ComponentPage page.
 
-  See http://ionicframework.com/docs/components/#navigation for more info on
+  See http://ionicframework.com/docs/this.components/#navigation for more info on
   Ionic pages and navigation.
 -->
 <ion-header>
   <ion-navbar>
-      <ion-title>{{ this.component.title }}</ion-title>
+      <ion-title *ngIf="!this.component">Loading...</ion-title>
+      <ion-title *ngIf="this.component">{{ this.component.title }}</ion-title>
   </ion-navbar>
 </ion-header>
 
 <ion-content padding>
-
+    <section *ngIf="this.component" padding>
+			<ion-item text-wrap *ngIf="this.component.completed && !this.component.deleted" style="padding-left: 6%; padding-right: 6%;">
+                  <a tabindex="-1" name="{{ this.component.id }}"><h2>{{ this.component.title }}</h2></a>
+                  <p [(innerHTML)]="this.component.description"></p>
+                  <p id="audio-{{ this.component.id }}-length">Duration of audio: loading...</p>
+                  <ion-item *ngIf="this.component.image_url && this.component.has_image_rights">
+                    <div class="frame" style="height: 220px; width: 100%; border: 1px solid gray; white-space: nowrap; text-align: center; margin: 1em 0; background-color: black;">
+                        <span class="helper" style="display: inline-block; height: 100%; vertical-align: middle;"></span>
+                        <img src="https://www.unidescription.org/{{ this.component.image_url }}" style="background: #3A6F9A; vertical-align: middle; max-height: 210px; max-width: 100%;" />
+                    </div>
+                  </ion-item>
+                  <audio class="audiofiles" id="audio-{{ this.component.id }}" preload="auto" controls>
+                      <source src="{{ this.component.audio_file_combined }}" type="audio/mpeg">
+                  </audio>
+                  <br /><button ion-button small (click)="dismissModal()">&larr; go back</button>
+            </ion-item>
+    </section>
 </ion-content>
