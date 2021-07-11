@@ -1,3 +1,5 @@
+# Migrated to Ionic Dashboard
+
 # UniD-app and UniD-app-pgbuild
 
 Use this repo to do active development on the UniD app. Once ready to build and submit to the app store, do the following:
