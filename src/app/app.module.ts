@@ -14,6 +14,7 @@ import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
 import { ProjectPage } from '../pages/project/project';
 import { IntroPage } from '../pages/intro/intro';
+import { ComponentPage } from '../pages/component/component';
 import { SafePipe } from './pipes/safe';
 
 @NgModule({
@@ -22,6 +23,7 @@ import { SafePipe } from './pipes/safe';
     HomePage,
 	ProjectPage,
     IntroPage,
+    ComponentPage,
     SafePipe
   ],
   imports: [
@@ -34,6 +36,7 @@ import { SafePipe } from './pipes/safe';
     MyApp,
     HomePage,
 	ProjectPage,
+    ComponentPage,
 	IntroPage
   ],
   providers: [

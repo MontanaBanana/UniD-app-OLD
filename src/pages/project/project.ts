@@ -1,13 +1,15 @@
 import { Component, ViewChild } from '@angular/core';
 import { Content } from 'ionic-angular';
 import { NavController, NavParams } from 'ionic-angular';
+import { ModalController, Modal, AlertController } from 'ionic-angular';
 import { Http, Response, BaseRequestOptions, RequestOptions, HttpModule, JsonpModule, Headers } from '@angular/http';
 import { Observable } from 'rxjs';
 import { DomSanitizer, SafeResourceUrl, SafeUrl} from '@angular/platform-browser';
 import { LoadingController } from 'ionic-angular';
 import { SafePipe } from '../../app/pipes/safe';
 import { Keyboard } from '@ionic-native/keyboard';
-
+import { Geolocation } from '@ionic-native/geolocation';
+import { ComponentPage } from '../component/component';
 
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
@@ -22,6 +24,7 @@ export class ProjectPage {
   public title;
   public url;
   public src;
+  public watch;
   public project;
   public loader;
   public sections1;
@@ -133,8 +136,18 @@ console.log(title_bar.clientHeight);
     }
   }
 
+  showComponentModal(data) {
+    let modal = this.modalCtrl.create({
+		component: ComponentPage,
+		componentProps: {
+			component: data
+		}
+	});
+    //modal.fireOtherLifecycles = false;
+    modal.present();
+  }
 
-  constructor(public navCtrl: NavController, public http: Http, public navParams: NavParams, public sanitizer: DomSanitizer, public loadingCtrl: LoadingController, public keyboard: Keyboard) {
+  constructor(public navCtrl: NavController, public http: Http, public modalCtrl: ModalController, public geolocation: Geolocation, public navParams: NavParams, public sanitizer: DomSanitizer, public loadingCtrl: LoadingController, public keyboard: Keyboard) {
 
   	this.src = 'Connect to the internet to download content.';
 	this.id = navParams.get("id");
@@ -147,7 +160,62 @@ console.log(title_bar.clientHeight);
     this.initializeItems();
 	
 	this.addDurations();
+
+    this.watch = this.geolocation.watchPosition();
+    this.watch.subscribe((data) => {
+       // data can be a set of coordinates, or an error (if an error occurred).
+       // data.coords.latitude
+       // data.coords.longitude
+	   if (this.sections1) {
+			for (let i = 0; i < this.sections1.length ; i++) {
+			   let comp = this.sections1[i];
+               let dist = this.distance(data.coords.latitude, data.coords.longitude, comp.latitude, comp.longitude, 'K') * 1000;
+
+			   if (dist <= comp.gps_range) {
+				   this.showComponentModal(comp);
+			   }
+			}
+	   }
+        
+    });
   }
+
+//:::  This routine calculates the distance between two points (given the     :::
+//:::  latitude/longitude of those points). It is being used to calculate     :::
+//:::  the distance between two locations using GeoDataSource (TM) prodducts  :::
+//:::                                                                         :::
+//:::  Definitions:                                                           :::
+//:::    South latitudes are negative, east longitudes are positive           :::
+//:::                                                                         :::
+//:::  Passed to function:                                                    :::
+//:::    lat1, lon1 = Latitude and Longitude of point 1 (in decimal degrees)  :::
+//:::    lat2, lon2 = Latitude and Longitude of point 2 (in decimal degrees)  :::
+//:::    unit = the unit you desire for results                               :::
+//:::           where: 'M' is statute miles (default)                         :::
+//:::                  'K' is kilometers                                      :::
+//:::                  'N' is nautical miles                                  :::
+//:::
+distance(lat1, lon1, lat2, lon2, unit): float {
+	if ((lat1 == lat2) && (lon1 == lon2)) {
+		return 0;
+	}
+	else {
+		var radlat1 = Math.PI * lat1/180;
+		var radlat2 = Math.PI * lat2/180;
+		var theta = lon1-lon2;
+		var radtheta = Math.PI * theta/180;
+		var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+		if (dist > 1) {
+			dist = 1;
+		}
+		dist = Math.acos(dist);
+		dist = dist * 180/Math.PI;
+		dist = dist * 60 * 1.1515;
+		if (unit=="K") { dist = dist * 1.609344 }
+		if (unit=="N") { dist = dist * 0.8684 }
+		return dist;
+	}
+}
   
     filterItems(ev: any) {
 		return 1;

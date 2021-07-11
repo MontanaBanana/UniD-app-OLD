@@ -1,19 +1,21 @@
-webpackJsonp([0],{
+webpackJsonp([1],{
 
-/***/ 104:
+/***/ 105:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ProjectPage; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(12);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_http__ = __webpack_require__(41);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ionic_native_keyboard__ = __webpack_require__(101);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_map__ = __webpack_require__(102);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_map___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_map__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_toPromise__ = __webpack_require__(103);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_toPromise___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_toPromise__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ionic_native_geolocation__ = __webpack_require__(102);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__component_component__ = __webpack_require__(107);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_rxjs_add_operator_map__ = __webpack_require__(103);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_rxjs_add_operator_map___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7_rxjs_add_operator_map__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_rxjs_add_operator_toPromise__ = __webpack_require__(104);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_rxjs_add_operator_toPromise___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8_rxjs_add_operator_toPromise__);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -32,10 +34,16 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
+
+
+
 var ProjectPage = /** @class */ (function () {
-    function ProjectPage(navCtrl, http, navParams, sanitizer, loadingCtrl, keyboard) {
+    function ProjectPage(navCtrl, http, modalCtrl, geolocation, navParams, sanitizer, loadingCtrl, keyboard) {
+        var _this = this;
         this.navCtrl = navCtrl;
         this.http = http;
+        this.modalCtrl = modalCtrl;
+        this.geolocation = geolocation;
         this.navParams = navParams;
         this.sanitizer = sanitizer;
         this.loadingCtrl = loadingCtrl;
@@ -50,6 +58,21 @@ var ProjectPage = /** @class */ (function () {
         this.presentLoading();
         this.initializeItems();
         this.addDurations();
+        this.watch = this.geolocation.watchPosition();
+        this.watch.subscribe(function (data) {
+            // data can be a set of coordinates, or an error (if an error occurred).
+            // data.coords.latitude
+            // data.coords.longitude
+            if (_this.sections1) {
+                for (var i = 0; i < _this.sections1.length; i++) {
+                    var comp = _this.sections1[i];
+                    var dist = _this.distance(data.coords.latitude, data.coords.longitude, comp.latitude, comp.longitude, 'K') * 1000;
+                    if (dist <= comp.gps_range) {
+                        _this.showComponentModal(comp);
+                    }
+                }
+            }
+        });
     }
     ProjectPage.prototype.scrollTop = function () {
         this.content.scrollToTop(400);
@@ -130,6 +153,56 @@ var ProjectPage = /** @class */ (function () {
             this.sections1 = this.cached_project.project_sections;
             this.sections2 = this.cached_project.project_sections;
             this.sections3 = this.cached_project.project_sections;
+        }
+    };
+    ProjectPage.prototype.showComponentModal = function (data) {
+        var modal = this.modalCtrl.create({
+            component: __WEBPACK_IMPORTED_MODULE_6__component_component__["a" /* ComponentPage */],
+            componentProps: {
+                component: data
+            }
+        });
+        //modal.fireOtherLifecycles = false;
+        modal.present();
+    };
+    //:::  This routine calculates the distance between two points (given the     :::
+    //:::  latitude/longitude of those points). It is being used to calculate     :::
+    //:::  the distance between two locations using GeoDataSource (TM) prodducts  :::
+    //:::                                                                         :::
+    //:::  Definitions:                                                           :::
+    //:::    South latitudes are negative, east longitudes are positive           :::
+    //:::                                                                         :::
+    //:::  Passed to function:                                                    :::
+    //:::    lat1, lon1 = Latitude and Longitude of point 1 (in decimal degrees)  :::
+    //:::    lat2, lon2 = Latitude and Longitude of point 2 (in decimal degrees)  :::
+    //:::    unit = the unit you desire for results                               :::
+    //:::           where: 'M' is statute miles (default)                         :::
+    //:::                  'K' is kilometers                                      :::
+    //:::                  'N' is nautical miles                                  :::
+    //:::
+    ProjectPage.prototype.distance = function (lat1, lon1, lat2, lon2, unit) {
+        if ((lat1 == lat2) && (lon1 == lon2)) {
+            return 0;
+        }
+        else {
+            var radlat1 = Math.PI * lat1 / 180;
+            var radlat2 = Math.PI * lat2 / 180;
+            var theta = lon1 - lon2;
+            var radtheta = Math.PI * theta / 180;
+            var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+            if (dist > 1) {
+                dist = 1;
+            }
+            dist = Math.acos(dist);
+            dist = dist * 180 / Math.PI;
+            dist = dist * 60 * 1.1515;
+            if (unit == "K") {
+                dist = dist * 1.609344;
+            }
+            if (unit == "N") {
+                dist = dist * 0.8684;
+            }
+            return dist;
         }
     };
     ProjectPage.prototype.filterItems = function (ev) {
@@ -268,32 +341,32 @@ var ProjectPage = /** @class */ (function () {
     ], ProjectPage.prototype, "content", void 0);
     ProjectPage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-project',template:/*ion-inline-start:"C:\Users\joseph\Development\UniD-app\src\pages\project\project.html"*/'<ion-header>\n  <ion-navbar id="project-navbar">\n    <ion-title id="project-title">\n      {{ this.title }}\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content scroll="true" id="project-body">\n\n  <ion-segment [(ngModel)]="viewType" (ionChange)="addDurations()">\n    <ion-segment-button value="text">\n      Text Only\n    </ion-segment-button>\n    <ion-segment-button value="audio">\n      Audio Only\n    </ion-segment-button>\n    <ion-segment-button value="text_audio">\n      Text and Audio\n    </ion-segment-button>\n  </ion-segment>\n  <ion-searchbar (input)="getItems($event)" (search)="closeKeyboard()"></ion-searchbar>\n  <h2 id="searchResultHeader" tabindex="-1" style="text-align: center; margin-top: 1rem;" *ngIf="isSearching"><span [(innerHTML)]="search_results_count"></span> results for <span [(innerHTML)]="search_text"></span></h2>\n\n<section *ngIf="!project" padding>\n    <p>Attempting to connect...</p>\n    <section *ngIf="notCached" padding>\n        <p>Cannot download brochure. Please connect to the Internet.</p>\n        <p>You can view previously downloaded brochures if you are offline.</p>\n    </section>\n</section>\n\n<section *ngIf="project">\n\n    <!--<h1 id="project_header" tabindex="-1" style="padding: 0 3% 0 3%;">{{project.title}}</h1>-->\n    <h1 id="project_header" tabindex="-1" style="padding: 0 3% 0 3%;">Table of Contents</h1>\n	\n	<p style="padding: 0 3% 0 3%;">Audio Available: <span id="duration">loading...</span></p>\n\n    <nav *ngIf="isSearching">\n        <ul>\n            <ng-container *ngFor="let component of sections1">\n              <li *ngIf="component.completed && !component.deleted">\n                <a href="#{{component.id}}">{{component.title}}</a>\n              </li>\n            </ng-container>\n        </ul>\n\n    </nav>\n\n    <nav *ngIf="!isSearching">\n        <ul>\n            <ng-container *ngFor="let component of sections1">\n              <li *ngIf="component.completed && !component.deleted && component.project_section_id == 0">\n                <a href="#{{component.id}}">{{component.title}}</a>\n                <ul>\n                    <ng-container *ngFor="let comp2 of sections2">\n                      <li *ngIf="comp2.project_section_id == component.id && comp2.completed && !comp2.deleted">\n                        <a href="#{{comp2.id}}">{{comp2.title}}</a>\n                        <ul>\n                          <ng-container *ngFor="let comp3 of sections3">\n                            <li *ngIf="comp3.project_section_id == comp2.id && comp3.completed && !comp3.deleted">\n                                <a href="#comp3.id">{{comp3.title}}</a>\n                            </li>\n                          </ng-container>\n                        </ul>\n                      </li>\n                    </ng-container>\n                </ul>\n              </li>\n            </ng-container>\n        </ul>\n    </nav>\n\n    <div [ngSwitch]="viewType">\n\n        <ion-list *ngSwitchCase="\'text\'">\n\n          <ng-container *ngFor="let component of sections3">\n              <ion-item text-wrap *ngIf="component.completed && !component.deleted" style="padding-left: 6%; padding-right: 6%;">\n                  <a tabindex="-1" name="{{ component.id }}"><h2>{{ component.title }}</h2></a>\n                  <p [(innerHTML)]="component.description"></p>\n                  <p style="display: none;" id="audio-{{ component.id }}-length">Duration of audio: loading...</p>\n				  <ion-item *ngIf="component.image_url && component.has_image_rights">\n					<div class="frame" style="height: 220px; width: 100%; border: 1px solid gray; white-space: nowrap; text-align: center; margin: 1em 0; background-color: black;">\n						<span class="helper" style="display: inline-block; height: 100%; vertical-align: middle;"></span>\n						<img src="https://www.unidescription.org/{{ component.image_url }}" style="background: #3A6F9A; vertical-align: middle; max-height: 210px; max-width: 100%;" />\n					</div>\n				  </ion-item>\n				  <audio class="audiofiles" id="audio-{{ component.id }}" preload="auto" controls style="display: none;">\n                      <source src="{{ component.audio_file_combined }}" type="audio/mpeg">\n                  </audio>\n                  <button ion-button small (click)="scrollTop()">&uarr; back to top</button>\n              </ion-item>\n          </ng-container>\n\n        </ion-list>\n\n        <ion-list *ngSwitchCase="\'audio\'">\n\n          <ng-container *ngFor="let component of sections3">\n              <ion-item text-wrap *ngIf="component.completed && !component.deleted" style="padding-left: 6%; padding-right: 6%;">\n                  <a tabindex="-1" name="{{ component.id }}"><h2>{{ component.title }}</h2></a>\n                  <p id="audio-{{ component.id }}-length">Duration of audio: loading...</p>\n				  <ion-item *ngIf="component.image_url && component.has_image_rights">\n					<div class="frame" style="height: 220px; width: 100%; border: 1px solid gray; white-space: nowrap; text-align: center; margin: 1em 0; background-color: black;">\n						<span class="helper" style="display: inline-block; height: 100%; vertical-align: middle;"></span>\n						<img src="https://www.unidescription.org/{{ component.image_url }}" style="background: #3A6F9A; vertical-align: middle; max-height: 210px; max-width: 100%;" />\n					</div>\n				  </ion-item>\n                  <audio class="audiofiles" id="audio-{{ component.id }}" preload="auto" controls>\n                      <source src="{{ component.audio_file_combined }}" type="audio/mpeg">\n                  </audio>\n                  <br /><button ion-button small (click)="scrollTop()">&uarr; back to top</button>\n              </ion-item>\n          </ng-container>\n\n        </ion-list>\n\n        <ion-list *ngSwitchCase="\'text_audio\'">\n\n          <ng-container *ngFor="let component of sections3">\n              <ion-item text-wrap *ngIf="component.completed && !component.deleted" style="padding-left: 6%; padding-right: 6%;">\n                  <a tabindex="-1" name="{{ component.id }}"><h2>{{ component.title }}</h2></a>\n                  <p [(innerHTML)]="component.description"></p>\n                  <p id="audio-{{ component.id }}-length">Duration of audio: loading...</p>\n				  <ion-item *ngIf="component.image_url && component.has_image_rights">\n					<div class="frame" style="height: 220px; width: 100%; border: 1px solid gray; white-space: nowrap; text-align: center; margin: 1em 0; background-color: black;">\n						<span class="helper" style="display: inline-block; height: 100%; vertical-align: middle;"></span>\n						<img src="https://www.unidescription.org/{{ component.image_url }}" style="background: #3A6F9A; vertical-align: middle; max-height: 210px; max-width: 100%;" />\n					</div>\n				  </ion-item>\n                  <audio class="audiofiles" id="audio-{{ component.id }}" preload="auto" controls>\n                      <source src="{{ component.audio_file_combined }}" type="audio/mpeg">\n                  </audio>\n                  <br /><button ion-button small (click)="scrollTop()">&uarr; back to top</button>\n              </ion-item>\n          </ng-container>\n\n        </ion-list>\n\n    </div>\n\n</section>\n\n</ion-content>\n\n<ion-footer>\n\n</ion-footer>\n\n'/*ion-inline-end:"C:\Users\joseph\Development\UniD-app\src\pages\project\project.html"*/
+            selector: 'page-project',template:/*ion-inline-start:"c:\Users\joseph\Development\UniD-app\src\pages\project\project.html"*/'<ion-header>\n  <ion-navbar id="project-navbar">\n    <ion-title id="project-title">\n      {{ this.title }}\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content scroll="true" id="project-body">\n\n  <ion-segment [(ngModel)]="viewType" (ionChange)="addDurations()">\n    <ion-segment-button value="text">\n      Text Only\n    </ion-segment-button>\n    <ion-segment-button value="audio">\n      Audio Only\n    </ion-segment-button>\n    <ion-segment-button value="text_audio">\n      Text and Audio\n    </ion-segment-button>\n  </ion-segment>\n  <ion-searchbar (input)="getItems($event)" (search)="closeKeyboard()"></ion-searchbar>\n  <h2 id="searchResultHeader" tabindex="-1" style="text-align: center; margin-top: 1rem;" *ngIf="isSearching"><span [(innerHTML)]="search_results_count"></span> results for <span [(innerHTML)]="search_text"></span></h2>\n\n<section *ngIf="!project" padding>\n    <p>Attempting to connect...</p>\n    <section *ngIf="notCached" padding>\n        <p>Cannot download brochure. Please connect to the Internet.</p>\n        <p>You can view previously downloaded brochures if you are offline.</p>\n    </section>\n</section>\n\n<section *ngIf="project">\n\n    <!--<h1 id="project_header" tabindex="-1" style="padding: 0 3% 0 3%;">{{project.title}}</h1>-->\n    <h1 id="project_header" tabindex="-1" style="padding: 0 3% 0 3%;">Table of Contents</h1>\n	\n	<p style="padding: 0 3% 0 3%;">Audio Available: <span id="duration">loading...</span></p>\n\n    <nav *ngIf="isSearching">\n        <ul>\n            <ng-container *ngFor="let component of sections1">\n              <li *ngIf="component.completed && !component.deleted">\n                <a href="#{{component.id}}">{{component.title}}</a>\n              </li>\n            </ng-container>\n        </ul>\n\n    </nav>\n\n    <nav *ngIf="!isSearching">\n        <ul>\n            <ng-container *ngFor="let component of sections1">\n              <li *ngIf="component.completed && !component.deleted && component.project_section_id == 0">\n                <a href="#{{component.id}}">{{component.title}}</a>\n                <ul>\n                    <ng-container *ngFor="let comp2 of sections2">\n                      <li *ngIf="comp2.project_section_id == component.id && comp2.completed && !comp2.deleted">\n                        <a href="#{{comp2.id}}">{{comp2.title}}</a>\n                        <ul>\n                          <ng-container *ngFor="let comp3 of sections3">\n                            <li *ngIf="comp3.project_section_id == comp2.id && comp3.completed && !comp3.deleted">\n                                <a href="#comp3.id">{{comp3.title}}</a>\n                            </li>\n                          </ng-container>\n                        </ul>\n                      </li>\n                    </ng-container>\n                </ul>\n              </li>\n            </ng-container>\n        </ul>\n    </nav>\n\n    <div [ngSwitch]="viewType">\n\n        <ion-list *ngSwitchCase="\'text\'">\n\n          <ng-container *ngFor="let component of sections3">\n              <ion-item text-wrap *ngIf="component.completed && !component.deleted" style="padding-left: 6%; padding-right: 6%;">\n                  <a tabindex="-1" name="{{ component.id }}"><h2>{{ component.title }}</h2></a>\n                  <p [(innerHTML)]="component.description"></p>\n                  <p style="display: none;" id="audio-{{ component.id }}-length">Duration of audio: loading...</p>\n				  <ion-item *ngIf="component.image_url && component.has_image_rights">\n					<div class="frame" style="height: 220px; width: 100%; border: 1px solid gray; white-space: nowrap; text-align: center; margin: 1em 0; background-color: black;">\n						<span class="helper" style="display: inline-block; height: 100%; vertical-align: middle;"></span>\n						<img src="https://www.unidescription.org/{{ component.image_url }}" style="background: #3A6F9A; vertical-align: middle; max-height: 210px; max-width: 100%;" />\n					</div>\n				  </ion-item>\n				  <audio class="audiofiles" id="audio-{{ component.id }}" preload="auto" controls style="display: none;">\n                      <source src="{{ component.audio_file_combined }}" type="audio/mpeg">\n                  </audio>\n                  <button ion-button small (click)="scrollTop()">&uarr; back to top</button>\n              </ion-item>\n          </ng-container>\n\n        </ion-list>\n\n        <ion-list *ngSwitchCase="\'audio\'">\n\n          <ng-container *ngFor="let component of sections3">\n              <ion-item text-wrap *ngIf="component.completed && !component.deleted" style="padding-left: 6%; padding-right: 6%;">\n                  <a tabindex="-1" name="{{ component.id }}"><h2>{{ component.title }}</h2></a>\n                  <p id="audio-{{ component.id }}-length">Duration of audio: loading...</p>\n				  <ion-item *ngIf="component.image_url && component.has_image_rights">\n					<div class="frame" style="height: 220px; width: 100%; border: 1px solid gray; white-space: nowrap; text-align: center; margin: 1em 0; background-color: black;">\n						<span class="helper" style="display: inline-block; height: 100%; vertical-align: middle;"></span>\n						<img src="https://www.unidescription.org/{{ component.image_url }}" style="background: #3A6F9A; vertical-align: middle; max-height: 210px; max-width: 100%;" />\n					</div>\n				  </ion-item>\n                  <audio class="audiofiles" id="audio-{{ component.id }}" preload="auto" controls>\n                      <source src="{{ component.audio_file_combined }}" type="audio/mpeg">\n                  </audio>\n                  <br /><button ion-button small (click)="scrollTop()">&uarr; back to top</button>\n              </ion-item>\n          </ng-container>\n\n        </ion-list>\n\n        <ion-list *ngSwitchCase="\'text_audio\'">\n\n          <ng-container *ngFor="let component of sections3">\n              <ion-item text-wrap *ngIf="component.completed && !component.deleted" style="padding-left: 6%; padding-right: 6%;">\n                  <a tabindex="-1" name="{{ component.id }}"><h2>{{ component.title }}</h2></a>\n                  <p [(innerHTML)]="component.description"></p>\n                  <p id="audio-{{ component.id }}-length">Duration of audio: loading...</p>\n				  <ion-item *ngIf="component.image_url && component.has_image_rights">\n					<div class="frame" style="height: 220px; width: 100%; border: 1px solid gray; white-space: nowrap; text-align: center; margin: 1em 0; background-color: black;">\n						<span class="helper" style="display: inline-block; height: 100%; vertical-align: middle;"></span>\n						<img src="https://www.unidescription.org/{{ component.image_url }}" style="background: #3A6F9A; vertical-align: middle; max-height: 210px; max-width: 100%;" />\n					</div>\n				  </ion-item>\n                  <audio class="audiofiles" id="audio-{{ component.id }}" preload="auto" controls>\n                      <source src="{{ component.audio_file_combined }}" type="audio/mpeg">\n                  </audio>\n                  <br /><button ion-button small (click)="scrollTop()">&uarr; back to top</button>\n              </ion-item>\n          </ng-container>\n\n        </ion-list>\n\n    </div>\n\n</section>\n\n</ion-content>\n\n<ion-footer>\n\n</ion-footer>\n\n'/*ion-inline-end:"c:\Users\joseph\Development\UniD-app\src\pages\project\project.html"*/
         }),
-        __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["g" /* NavController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["g" /* NavController */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_2__angular_http__["a" /* Http */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__angular_http__["a" /* Http */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavParams */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavParams */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["c" /* DomSanitizer */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["c" /* DomSanitizer */]) === "function" && _e || Object, typeof (_f = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["e" /* LoadingController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["e" /* LoadingController */]) === "function" && _f || Object, typeof (_g = typeof __WEBPACK_IMPORTED_MODULE_4__ionic_native_keyboard__["a" /* Keyboard */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__ionic_native_keyboard__["a" /* Keyboard */]) === "function" && _g || Object])
+        __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_2__angular_http__["a" /* Http */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__angular_http__["a" /* Http */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["g" /* ModalController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["g" /* ModalController */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_5__ionic_native_geolocation__["a" /* Geolocation */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5__ionic_native_geolocation__["a" /* Geolocation */]) === "function" && _e || Object, typeof (_f = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */]) === "function" && _f || Object, typeof (_g = typeof __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["c" /* DomSanitizer */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["c" /* DomSanitizer */]) === "function" && _g || Object, typeof (_h = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["f" /* LoadingController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["f" /* LoadingController */]) === "function" && _h || Object, typeof (_j = typeof __WEBPACK_IMPORTED_MODULE_4__ionic_native_keyboard__["a" /* Keyboard */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__ionic_native_keyboard__["a" /* Keyboard */]) === "function" && _j || Object])
     ], ProjectPage);
     return ProjectPage;
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
 }());
 
 //# sourceMappingURL=project.js.map
 
 /***/ }),
 
-/***/ 105:
+/***/ 106:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return IntroPage; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_ionic_angular_index__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_ionic_angular_index__ = __webpack_require__(12);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_http__ = __webpack_require__(41);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_map__ = __webpack_require__(102);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_map__ = __webpack_require__(103);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_map___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_map__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_toPromise__ = __webpack_require__(103);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_toPromise__ = __webpack_require__(104);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_toPromise___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_toPromise__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__project_project__ = __webpack_require__(104);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__project_project__ = __webpack_require__(105);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -339,9 +412,9 @@ var IntroPage = /** @class */ (function () {
     };
     IntroPage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-intro',template:/*ion-inline-start:"C:\Users\joseph\Development\UniD-app\src\pages\intro\intro.html"*/'<div style="background: url(statue.jpg) no-repeat; background-position: center top; -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; background-size: cover; height: 100%; width: 100%; text-align: center;" (click)="dismissModal()">\n\n    <!-- align to the bottom of the page -->\n    <div style="position: absolute; bottom: 0px; black; color: white; text-shadow: 2px 2px #000; background-color: rgba(0, 0, 0, .6); width: 100%; padding: 5%; text-align: center;">\n      <h1 style="font-size: 1.9rem; margin-top: 0; margin-bottom: 0;">Audio Describe the World!</h1>\n      <p style="font-size: 1.4rem; margin-top: 0; margin-bottom: 0;">\n        That is the mantra of The UniDescription Project, which has begun with the translation of National Park Service brochures, including for Statue of Liberty National Monument. To hear those, just touch the screen and choose from among the dozens of brochures.\n      </p>\n	  <button ion-button full type="submit">\n          Search\n      </button>\n	  <button ion-button full type="submit">\n          All brochures\n      </button>\n	  <button ion-button full type="submit">\n          Settings\n      </button>\n	  <button ion-button full (click)="goToHowTo()">\n          How to use this app\n      </button>	  \n      <button ion-button full (click)="goToFaq()">\n          FAQ\n      </button>\n      <button ion-button full (click)="goToAboutUs()">\n          About Us\n      </button>\n    </div>\n\n</div>\n'/*ion-inline-end:"C:\Users\joseph\Development\UniD-app\src\pages\intro\intro.html"*/
+            selector: 'page-intro',template:/*ion-inline-start:"c:\Users\joseph\Development\UniD-app\src\pages\intro\intro.html"*/'<div style="background: url(statue.jpg) no-repeat; background-position: center top; -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; background-size: cover; height: 100%; width: 100%; text-align: center;" (click)="dismissModal()">\n\n    <!-- align to the bottom of the page -->\n    <div style="position: absolute; bottom: 0px; black; color: white; text-shadow: 2px 2px #000; background-color: rgba(0, 0, 0, .6); width: 100%; padding: 5%; text-align: center;">\n      <h1 style="font-size: 1.9rem; margin-top: 0; margin-bottom: 0;">Audio Describe the World!</h1>\n      <p style="font-size: 1.4rem; margin-top: 0; margin-bottom: 0;">\n        That is the mantra of The UniDescription Project, which has begun with the translation of National Park Service brochures, including for Statue of Liberty National Monument. To hear those, just touch the screen and choose from among the dozens of brochures.\n      </p>\n	  <button ion-button full type="submit">\n          Search\n      </button>\n	  <button ion-button full type="submit">\n          All brochures\n      </button>\n	  <button ion-button full type="submit">\n          Settings\n      </button>\n	  <button ion-button full (click)="goToHowTo()">\n          How to use this app\n      </button>	  \n      <button ion-button full (click)="goToFaq()">\n          FAQ\n      </button>\n      <button ion-button full (click)="goToAboutUs()">\n          About Us\n      </button>\n    </div>\n\n</div>\n'/*ion-inline-end:"c:\Users\joseph\Development\UniD-app\src\pages\intro\intro.html"*/
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["g" /* NavController */], __WEBPACK_IMPORTED_MODULE_3__angular_http__["a" /* Http */], __WEBPACK_IMPORTED_MODULE_2_ionic_angular_index__["j" /* ViewController */]])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */], __WEBPACK_IMPORTED_MODULE_3__angular_http__["a" /* Http */], __WEBPACK_IMPORTED_MODULE_2_ionic_angular_index__["k" /* ViewController */]])
     ], IntroPage);
     return IntroPage;
 }());
@@ -350,7 +423,54 @@ var IntroPage = /** @class */ (function () {
 
 /***/ }),
 
-/***/ 115:
+/***/ 107:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ComponentPage; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(12);
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+/**
+ * Generated class for the ComponentPage page.
+ *
+ * See https://ionicframework.com/docs/components/#navigation for more info on
+ * Ionic pages and navigation.
+ */
+var ComponentPage = /** @class */ (function () {
+    function ComponentPage(navCtrl, navParams) {
+        this.navCtrl = navCtrl;
+        this.navParams = navParams;
+    }
+    ComponentPage.prototype.ngOnInit = function () {
+    };
+    ComponentPage.prototype.ionViewDidLoad = function () {
+        console.log('ionViewDidLoad ComponentPage');
+    };
+    ComponentPage = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
+            selector: 'page-component',template:/*ion-inline-start:"c:\Users\joseph\Development\UniD-app\src\pages\component\component.html"*/'<!--\n  Generated template for the ComponentPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n  <ion-navbar>\n      <ion-title>{{ this.component.title }}</ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n\n</ion-content>\n'/*ion-inline-end:"c:\Users\joseph\Development\UniD-app\src\pages\component\component.html"*/,
+        }),
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */]])
+    ], ComponentPage);
+    return ComponentPage;
+}());
+
+//# sourceMappingURL=component.js.map
+
+/***/ }),
+
+/***/ 117:
 /***/ (function(module, exports) {
 
 function webpackEmptyAsyncContext(req) {
@@ -363,43 +483,51 @@ function webpackEmptyAsyncContext(req) {
 webpackEmptyAsyncContext.keys = function() { return []; };
 webpackEmptyAsyncContext.resolve = webpackEmptyAsyncContext;
 module.exports = webpackEmptyAsyncContext;
-webpackEmptyAsyncContext.id = 115;
+webpackEmptyAsyncContext.id = 117;
 
 /***/ }),
 
-/***/ 157:
-/***/ (function(module, exports) {
+/***/ 159:
+/***/ (function(module, exports, __webpack_require__) {
 
-function webpackEmptyAsyncContext(req) {
-	// Here Promise.resolve().then() is used instead of new Promise() to prevent
-	// uncatched exception popping up in devtools
-	return Promise.resolve().then(function() {
-		throw new Error("Cannot find module '" + req + "'.");
+var map = {
+	"../pages/component/component.module": [
+		277,
+		0
+	]
+};
+function webpackAsyncContext(req) {
+	var ids = map[req];
+	if(!ids)
+		return Promise.reject(new Error("Cannot find module '" + req + "'."));
+	return __webpack_require__.e(ids[1]).then(function() {
+		return __webpack_require__(ids[0]);
 	});
-}
-webpackEmptyAsyncContext.keys = function() { return []; };
-webpackEmptyAsyncContext.resolve = webpackEmptyAsyncContext;
-module.exports = webpackEmptyAsyncContext;
-webpackEmptyAsyncContext.id = 157;
+};
+webpackAsyncContext.keys = function webpackAsyncContextKeys() {
+	return Object.keys(map);
+};
+webpackAsyncContext.id = 159;
+module.exports = webpackAsyncContext;
 
 /***/ }),
 
-/***/ 201:
+/***/ 202:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return HomePage; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(12);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_http__ = __webpack_require__(41);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ionic_native_keyboard__ = __webpack_require__(101);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ionic_native_geolocation__ = __webpack_require__(200);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_map__ = __webpack_require__(102);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ionic_native_geolocation__ = __webpack_require__(102);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_map__ = __webpack_require__(103);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_map___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_map__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_toPromise__ = __webpack_require__(103);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_toPromise__ = __webpack_require__(104);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_toPromise___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_toPromise__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__project_project__ = __webpack_require__(104);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__intro_intro__ = __webpack_require__(105);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__project_project__ = __webpack_require__(105);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__intro_intro__ = __webpack_require__(106);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -548,25 +676,24 @@ var HomePage = /** @class */ (function () {
     };
     HomePage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-home',template:/*ion-inline-start:"C:\Users\joseph\Development\UniD-app\src\pages\home\home.html"*/'<ion-content>\n   <div style="text-align: center;"> \n      <img src="nps-logo.png" alt="National Park Service logo" (click)="showIntro()" width="61" style="position: relative; top: -9px; float: left; margin-left: 15px;" />\n      <h3>National Park Service brochures</h3>\n   </div>\n	<ion-segment [(ngModel)]="sort_by">\n      <ion-segment-button value="name">\n        By Name\n      </ion-segment-button>\n	  <ion-segment-button value="state">\n        By State\n      </ion-segment-button>\n      <!--<ion-segment-button value="type">\n        By Type\n      </ion-segment-button>-->\n    </ion-segment>\n   <ion-searchbar (ionInput)="getItems($event)" (search)="closeKeyboard()"></ion-searchbar>\n   <h2 id="searchResultHeader" tabindex="-1" style="text-align: center; margin-top: 1rem;" *ngIf="isSearching"><span [(innerHTML)]="search_results_count"></span> results for <span [(innerHTML)]="search_text"></span></h2>\n\n<div [ngSwitch]="sort_by">\n\n  <ion-list *ngSwitchCase="\'name\'">\n	  <button ion-item text-wrap *ngFor="let item of name_items" (click)="itemSelected(item)">\n		{{ item.title }}\n	  </button>\n  </ion-list>\n\n  <ion-list *ngSwitchCase="\'state\'">\n	  <button ion-item text-wrap *ngFor="let item of state_items" (click)="itemSelected(item)">\n		{{ item.title }}\n	  </button>\n  </ion-list>\n  \n  <ion-list *ngSwitchCase="\'type\'">\n	  <button ion-item text-wrap *ngFor="let item of type_items" (click)="itemSelected(item)">\n		{{ item.title }}\n	  </button>\n  </ion-list>\n</div>	\n	\n\n</ion-content>\n'/*ion-inline-end:"C:\Users\joseph\Development\UniD-app\src\pages\home\home.html"*/
+            selector: 'page-home',template:/*ion-inline-start:"c:\Users\joseph\Development\UniD-app\src\pages\home\home.html"*/'<ion-content>\n   <div style="text-align: center;"> \n      <img src="nps-logo.png" alt="National Park Service logo" (click)="showIntro()" width="61" style="position: relative; top: -9px; float: left; margin-left: 15px;" />\n      <h3>National Park Service brochures</h3>\n   </div>\n	<ion-segment [(ngModel)]="sort_by">\n      <ion-segment-button value="name">\n        By Name\n      </ion-segment-button>\n	  <ion-segment-button value="state">\n        By State\n      </ion-segment-button>\n      <!--<ion-segment-button value="type">\n        By Type\n      </ion-segment-button>-->\n    </ion-segment>\n   <ion-searchbar (ionInput)="getItems($event)" (search)="closeKeyboard()"></ion-searchbar>\n   <h2 id="searchResultHeader" tabindex="-1" style="text-align: center; margin-top: 1rem;" *ngIf="isSearching"><span [(innerHTML)]="search_results_count"></span> results for <span [(innerHTML)]="search_text"></span></h2>\n\n<div [ngSwitch]="sort_by">\n\n  <ion-list *ngSwitchCase="\'name\'">\n	  <button ion-item text-wrap *ngFor="let item of name_items" (click)="itemSelected(item)">\n		{{ item.title }}\n	  </button>\n  </ion-list>\n\n  <ion-list *ngSwitchCase="\'state\'">\n	  <button ion-item text-wrap *ngFor="let item of state_items" (click)="itemSelected(item)">\n		{{ item.title }}\n	  </button>\n  </ion-list>\n  \n  <ion-list *ngSwitchCase="\'type\'">\n	  <button ion-item text-wrap *ngFor="let item of type_items" (click)="itemSelected(item)">\n		{{ item.title }}\n	  </button>\n  </ion-list>\n</div>	\n	\n\n</ion-content>\n'/*ion-inline-end:"c:\Users\joseph\Development\UniD-app\src\pages\home\home.html"*/
         }),
-        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["g" /* NavController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["g" /* NavController */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__angular_http__["a" /* Http */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__angular_http__["a" /* Http */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_4__ionic_native_geolocation__["a" /* Geolocation */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__ionic_native_geolocation__["a" /* Geolocation */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["f" /* ModalController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["f" /* ModalController */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_3__ionic_native_keyboard__["a" /* Keyboard */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__ionic_native_keyboard__["a" /* Keyboard */]) === "function" && _e || Object])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */], __WEBPACK_IMPORTED_MODULE_2__angular_http__["a" /* Http */], __WEBPACK_IMPORTED_MODULE_4__ionic_native_geolocation__["a" /* Geolocation */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["g" /* ModalController */], __WEBPACK_IMPORTED_MODULE_3__ionic_native_keyboard__["a" /* Keyboard */]])
     ], HomePage);
     return HomePage;
-    var _a, _b, _c, _d, _e;
 }());
 
 //# sourceMappingURL=home.js.map
 
 /***/ }),
 
-/***/ 202:
+/***/ 203:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__ = __webpack_require__(203);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__app_module__ = __webpack_require__(225);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__ = __webpack_require__(204);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__app_module__ = __webpack_require__(226);
 
 
 Object(__WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__["a" /* platformBrowserDynamic */])().bootstrapModule(__WEBPACK_IMPORTED_MODULE_1__app_module__["a" /* AppModule */]);
@@ -574,7 +701,7 @@ Object(__WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__["a" /* pl
 
 /***/ }),
 
-/***/ 225:
+/***/ 226:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -582,16 +709,17 @@ Object(__WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__["a" /* pl
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_http__ = __webpack_require__(41);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_ionic_angular__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ionic_native_splash_screen__ = __webpack_require__(197);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ionic_native_status_bar__ = __webpack_require__(199);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_ionic_angular__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ionic_native_splash_screen__ = __webpack_require__(199);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ionic_native_status_bar__ = __webpack_require__(201);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__ionic_native_keyboard__ = __webpack_require__(101);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__ionic_native_geolocation__ = __webpack_require__(200);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__app_component__ = __webpack_require__(274);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__pages_home_home__ = __webpack_require__(201);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__pages_project_project__ = __webpack_require__(104);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__pages_intro_intro__ = __webpack_require__(105);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__pipes_safe__ = __webpack_require__(275);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__ionic_native_geolocation__ = __webpack_require__(102);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__app_component__ = __webpack_require__(275);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__pages_home_home__ = __webpack_require__(202);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__pages_project_project__ = __webpack_require__(105);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__pages_intro_intro__ = __webpack_require__(106);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__pages_component_component__ = __webpack_require__(107);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__pipes_safe__ = __webpack_require__(276);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -613,6 +741,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 
 
 
+
 var AppModule = /** @class */ (function () {
     function AppModule() {
     }
@@ -623,13 +752,16 @@ var AppModule = /** @class */ (function () {
                 __WEBPACK_IMPORTED_MODULE_9__pages_home_home__["a" /* HomePage */],
                 __WEBPACK_IMPORTED_MODULE_10__pages_project_project__["a" /* ProjectPage */],
                 __WEBPACK_IMPORTED_MODULE_11__pages_intro_intro__["a" /* IntroPage */],
-                __WEBPACK_IMPORTED_MODULE_12__pipes_safe__["a" /* SafePipe */]
+                __WEBPACK_IMPORTED_MODULE_12__pages_component_component__["a" /* ComponentPage */],
+                __WEBPACK_IMPORTED_MODULE_13__pipes_safe__["a" /* SafePipe */]
             ],
             imports: [
                 __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
                 __WEBPACK_IMPORTED_MODULE_1__angular_http__["b" /* HttpModule */],
                 __WEBPACK_IMPORTED_MODULE_3_ionic_angular__["d" /* IonicModule */].forRoot(__WEBPACK_IMPORTED_MODULE_8__app_component__["a" /* MyApp */], {}, {
-                    links: []
+                    links: [
+                        { loadChildren: '../pages/component/component.module#ComponentPageModule', name: 'ComponentPage', segment: 'component', priority: 'low', defaultHistory: [] }
+                    ]
                 }),
             ],
             bootstrap: [__WEBPACK_IMPORTED_MODULE_3_ionic_angular__["b" /* IonicApp */]],
@@ -637,6 +769,7 @@ var AppModule = /** @class */ (function () {
                 __WEBPACK_IMPORTED_MODULE_8__app_component__["a" /* MyApp */],
                 __WEBPACK_IMPORTED_MODULE_9__pages_home_home__["a" /* HomePage */],
                 __WEBPACK_IMPORTED_MODULE_10__pages_project_project__["a" /* ProjectPage */],
+                __WEBPACK_IMPORTED_MODULE_12__pages_component_component__["a" /* ComponentPage */],
                 __WEBPACK_IMPORTED_MODULE_11__pages_intro_intro__["a" /* IntroPage */]
             ],
             providers: [
@@ -655,17 +788,17 @@ var AppModule = /** @class */ (function () {
 
 /***/ }),
 
-/***/ 274:
+/***/ 275:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return MyApp; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__ = __webpack_require__(199);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__ = __webpack_require__(197);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pages_home_home__ = __webpack_require__(201);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__pages_intro_intro__ = __webpack_require__(105);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__ = __webpack_require__(201);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__ = __webpack_require__(199);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pages_home_home__ = __webpack_require__(202);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__pages_intro_intro__ = __webpack_require__(106);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -704,9 +837,9 @@ var MyApp = /** @class */ (function () {
         });
     }
     MyApp = __decorate([
-        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"C:\Users\joseph\Development\UniD-app\src\app\app.html"*/'<ion-nav [root]="rootPage"></ion-nav>\n'/*ion-inline-end:"C:\Users\joseph\Development\UniD-app\src\app\app.html"*/
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"c:\Users\joseph\Development\UniD-app\src\app\app.html"*/'<ion-nav [root]="rootPage"></ion-nav>\n'/*ion-inline-end:"c:\Users\joseph\Development\UniD-app\src\app\app.html"*/
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* Platform */], __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__["a" /* StatusBar */], __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__["a" /* SplashScreen */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["f" /* ModalController */]])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["j" /* Platform */], __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__["a" /* StatusBar */], __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__["a" /* SplashScreen */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["g" /* ModalController */]])
     ], MyApp);
     return MyApp;
 }());
@@ -715,7 +848,7 @@ var MyApp = /** @class */ (function () {
 
 /***/ }),
 
-/***/ 275:
+/***/ 276:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -766,5 +899,5 @@ var SafePipe = /** @class */ (function () {
 
 /***/ })
 
-},[202]);
+},[203]);
 //# sourceMappingURL=main.js.map
