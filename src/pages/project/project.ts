@@ -195,7 +195,7 @@ console.log(title_bar.clientHeight);
 //:::                  'K' is kilometers                                      :::
 //:::                  'N' is nautical miles                                  :::
 //:::
-distance(lat1, lon1, lat2, lon2, unit): float {
+distance(lat1, lon1, lat2, lon2, unit) {
 	if ((lat1 == lat2) && (lon1 == lon2)) {
 		return 0;
 	}
