@@ -1,10 +1,29 @@
-<ion-content style="background-color: black; color: white;" padding (click)="dismissModal()">
-      <img src="statue.jpg" alt="A night photograph of the Statue of Liberty shows this beacon of American freedom lit from below, with spotlights, from the perch she stands upon to the tip of her iconic torch, held high by her right hand. " /><br />
-      <h1 style="text-align: center;">Audio Describe the World!</h1>
-      <p>
-        That is the mantra of the UniDescription project, which has begun with the translation of National Park Service brochures, including for Statue of Liberty National Monument. To hear those, just touch the screen and choose from among the dozens of brochures.
+<div style="background: url(statue.jpg) no-repeat; background-position: center top; -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; background-size: cover; height: 100%; width: 100%; text-align: center;" (click)="dismissModal()">
+
+    <!-- align to the bottom of the page -->
+    <div style="position: absolute; bottom: 0px; black; color: white; text-shadow: 2px 2px #000; background-color: rgba(0, 0, 0, .6); width: 100%; padding: 5%; text-align: center;">
+      <h1 style="font-size: 1.9rem; margin-top: 0; margin-bottom: 0;">Audio Describe the World!</h1>
+      <p style="font-size: 1.4rem; margin-top: 0; margin-bottom: 0;">
+        That is the mantra of The UniDescription Project, which has begun with the translation of National Park Service brochures, including for Statue of Liberty National Monument. To hear those, just touch the screen and choose from among the dozens of brochures.
       </p>
-      <button ion-button full type="submit">
-          Continue
+	  <button ion-button full type="submit">
+          Search
       </button>
-</ion-content>
+	  <button ion-button full type="submit">
+          All brochures
+      </button>
+	  <button ion-button full type="submit">
+          Settings
+      </button>
+	  <button ion-button full (click)="goToHowTo()">
+          How to use this app
+      </button>	  
+      <button ion-button full (click)="goToFaq()">
+          FAQ
+      </button>
+      <button ion-button full (click)="goToAboutUs()">
+          About Us
+      </button>
+    </div>
+
+</div>

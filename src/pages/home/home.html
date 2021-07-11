@@ -1,13 +1,8 @@
-<ion-header>
-  <ion-navbar>
-    <ion-title>
-      National Park Service brochures 
-    </ion-title>
-  </ion-navbar>
-</ion-header>
-
 <ion-content>
-	<ion-searchbar (ionInput)="getItems($event)"></ion-searchbar>
+   <div style="text-align: center;"> 
+      <img src="nps-logo.png" alt="National Park Service logo" (click)="showIntro()" width="61" style="position: relative; top: -9px; float: left; margin-left: 15px;" />
+      <h3>National Park Service brochures</h3>
+   </div>
 	<ion-segment [(ngModel)]="sort_by">
       <ion-segment-button value="name">
         By Name
@@ -19,22 +14,25 @@
         By Type
       </ion-segment-button>-->
     </ion-segment>
+   <ion-searchbar (ionInput)="getItems($event)" (search)="closeKeyboard()"></ion-searchbar>
+   <h2 id="searchResultHeader" tabindex="-1" style="text-align: center; margin-top: 1rem;" *ngIf="isSearching"><span [(innerHTML)]="search_results_count"></span> results for <span [(innerHTML)]="search_text"></span></h2>
 
 <div [ngSwitch]="sort_by">
+
   <ion-list *ngSwitchCase="'name'">
-	  <button ion-item *ngFor="let item of name_items" (click)="itemSelected(item)">
+	  <button ion-item text-wrap *ngFor="let item of name_items" (click)="itemSelected(item)">
 		{{ item.title }}
 	  </button>
   </ion-list>
 
   <ion-list *ngSwitchCase="'state'">
-	  <button ion-item *ngFor="let item of state_items" (click)="itemSelected(item)">
+	  <button ion-item text-wrap *ngFor="let item of state_items" (click)="itemSelected(item)">
 		{{ item.title }}
 	  </button>
   </ion-list>
   
   <ion-list *ngSwitchCase="'type'">
-	  <button ion-item *ngFor="let item of type_items" (click)="itemSelected(item)">
+	  <button ion-item text-wrap *ngFor="let item of type_items" (click)="itemSelected(item)">
 		{{ item.title }}
 	  </button>
   </ion-list>

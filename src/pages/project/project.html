@@ -1,13 +1,151 @@
 <ion-header>
-  <ion-navbar>
-    <ion-title>
+  <ion-navbar id="project-navbar">
+    <ion-title id="project-title">
       {{ this.title }}
     </ion-title>
   </ion-navbar>
 </ion-header>
 
-<ion-content scroll="true" overflow-scroll="true">
-	<!--<div [innerHTML]="src"></div>-->
-	<iframe data-tap-disabled="true" [srcdoc]="this.src" width="100%" height="100%" border="0"></iframe>
-	<!--<iframe data-tap-disabled="true" [src]="this.url" width="100%" height="100%" border="0"></iframe>-->
+<ion-content scroll="true" id="project-body">
+
+  <ion-segment [(ngModel)]="viewType" (ionChange)="addDurations()">
+    <ion-segment-button value="text">
+      Text Only
+    </ion-segment-button>
+    <ion-segment-button value="audio">
+      Audio Only
+    </ion-segment-button>
+    <ion-segment-button value="text_audio">
+      Text and Audio
+    </ion-segment-button>
+  </ion-segment>
+  <ion-searchbar (input)="getItems($event)" (search)="closeKeyboard()"></ion-searchbar>
+  <h2 id="searchResultHeader" tabindex="-1" style="text-align: center; margin-top: 1rem;" *ngIf="isSearching"><span [(innerHTML)]="search_results_count"></span> results for <span [(innerHTML)]="search_text"></span></h2>
+
+<section *ngIf="!project" padding>
+    <p>Attempting to connect...</p>
+    <section *ngIf="notCached" padding>
+        <p>Cannot download brochure. Please connect to the Internet.</p>
+        <p>You can view previously downloaded brochures if you are offline.</p>
+    </section>
+</section>
+
+<section *ngIf="project">
+
+    <!--<h1 id="project_header" tabindex="-1" style="padding: 0 3% 0 3%;">{{project.title}}</h1>-->
+    <h1 id="project_header" tabindex="-1" style="padding: 0 3% 0 3%;">Table of Contents</h1>
+	
+	<p style="padding: 0 3% 0 3%;">Audio Available: <span id="duration">loading...</span></p>
+
+    <nav *ngIf="isSearching">
+        <ul>
+            <ng-container *ngFor="let component of sections1">
+              <li *ngIf="component.completed && !component.deleted">
+                <a href="#{{component.id}}">{{component.title}}</a>
+              </li>
+            </ng-container>
+        </ul>
+
+    </nav>
+
+    <nav *ngIf="!isSearching">
+        <ul>
+            <ng-container *ngFor="let component of sections1">
+              <li *ngIf="component.completed && !component.deleted && component.project_section_id == 0">
+                <a href="#{{component.id}}">{{component.title}}</a>
+                <ul>
+                    <ng-container *ngFor="let comp2 of sections2">
+                      <li *ngIf="comp2.project_section_id == component.id && comp2.completed && !comp2.deleted">
+                        <a href="#{{comp2.id}}">{{comp2.title}}</a>
+                        <ul>
+                          <ng-container *ngFor="let comp3 of sections3">
+                            <li *ngIf="comp3.project_section_id == comp2.id && comp3.completed && !comp3.deleted">
+                                <a href="#comp3.id">{{comp3.title}}</a>
+                            </li>
+                          </ng-container>
+                        </ul>
+                      </li>
+                    </ng-container>
+                </ul>
+              </li>
+            </ng-container>
+        </ul>
+    </nav>
+
+    <div [ngSwitch]="viewType">
+
+        <ion-list *ngSwitchCase="'text'">
+
+          <ng-container *ngFor="let component of sections3">
+              <ion-item text-wrap *ngIf="component.completed && !component.deleted" style="padding-left: 6%; padding-right: 6%;">
+                  <a tabindex="-1" name="{{ component.id }}"><h2>{{ component.title }}</h2></a>
+                  <p [(innerHTML)]="component.description"></p>
+                  <p style="display: none;" id="audio-{{ component.id }}-length">Duration of audio: loading...</p>
+				  <ion-item *ngIf="component.image_url && component.has_image_rights">
+					<div class="frame" style="height: 220px; width: 100%; border: 1px solid gray; white-space: nowrap; text-align: center; margin: 1em 0; background-color: black;">
+						<span class="helper" style="display: inline-block; height: 100%; vertical-align: middle;"></span>
+						<img src="https://www.unidescription.org/{{ component.image_url }}" style="background: #3A6F9A; vertical-align: middle; max-height: 210px; max-width: 100%;" />
+					</div>
+				  </ion-item>
+				  <audio class="audiofiles" id="audio-{{ component.id }}" preload="auto" controls style="display: none;">
+                      <source src="{{ component.audio_file_combined }}" type="audio/mpeg">
+                  </audio>
+                  <button ion-button small (click)="scrollTop()">&uarr; back to top</button>
+              </ion-item>
+          </ng-container>
+
+        </ion-list>
+
+        <ion-list *ngSwitchCase="'audio'">
+
+          <ng-container *ngFor="let component of sections3">
+              <ion-item text-wrap *ngIf="component.completed && !component.deleted" style="padding-left: 6%; padding-right: 6%;">
+                  <a tabindex="-1" name="{{ component.id }}"><h2>{{ component.title }}</h2></a>
+                  <p id="audio-{{ component.id }}-length">Duration of audio: loading...</p>
+				  <ion-item *ngIf="component.image_url && component.has_image_rights">
+					<div class="frame" style="height: 220px; width: 100%; border: 1px solid gray; white-space: nowrap; text-align: center; margin: 1em 0; background-color: black;">
+						<span class="helper" style="display: inline-block; height: 100%; vertical-align: middle;"></span>
+						<img src="https://www.unidescription.org/{{ component.image_url }}" style="background: #3A6F9A; vertical-align: middle; max-height: 210px; max-width: 100%;" />
+					</div>
+				  </ion-item>
+                  <audio class="audiofiles" id="audio-{{ component.id }}" preload="auto" controls>
+                      <source src="{{ component.audio_file_combined }}" type="audio/mpeg">
+                  </audio>
+                  <br /><button ion-button small (click)="scrollTop()">&uarr; back to top</button>
+              </ion-item>
+          </ng-container>
+
+        </ion-list>
+
+        <ion-list *ngSwitchCase="'text_audio'">
+
+          <ng-container *ngFor="let component of sections3">
+              <ion-item text-wrap *ngIf="component.completed && !component.deleted" style="padding-left: 6%; padding-right: 6%;">
+                  <a tabindex="-1" name="{{ component.id }}"><h2>{{ component.title }}</h2></a>
+                  <p [(innerHTML)]="component.description"></p>
+                  <p id="audio-{{ component.id }}-length">Duration of audio: loading...</p>
+				  <ion-item *ngIf="component.image_url && component.has_image_rights">
+					<div class="frame" style="height: 220px; width: 100%; border: 1px solid gray; white-space: nowrap; text-align: center; margin: 1em 0; background-color: black;">
+						<span class="helper" style="display: inline-block; height: 100%; vertical-align: middle;"></span>
+						<img src="https://www.unidescription.org/{{ component.image_url }}" style="background: #3A6F9A; vertical-align: middle; max-height: 210px; max-width: 100%;" />
+					</div>
+				  </ion-item>
+                  <audio class="audiofiles" id="audio-{{ component.id }}" preload="auto" controls>
+                      <source src="{{ component.audio_file_combined }}" type="audio/mpeg">
+                  </audio>
+                  <br /><button ion-button small (click)="scrollTop()">&uarr; back to top</button>
+              </ion-item>
+          </ng-container>
+
+        </ion-list>
+
+    </div>
+
+</section>
+
 </ion-content>
+
+<ion-footer>
+
+</ion-footer>
+

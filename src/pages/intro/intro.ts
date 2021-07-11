@@ -24,4 +24,26 @@ export class IntroPage {
         this.viewCtrl.dismiss();
   }
   
+  public goToAboutUs() {
+	this.navCtrl.push(ProjectPage, {
+		id: 281,
+		title: 'About Us - The UniDescription Project'
+	});
+  }
+  
+  public goToFaq() {
+	this.navCtrl.push(ProjectPage, {
+		id: 580,
+		title: 'FAQ'
+	}); 
+  }
+  
+  public goToHowTo() {
+	this.navCtrl.push(ProjectPage, {
+		id: 581,
+		title: 'How to Use This App'
+	}); 
+  }  
+  
+  
 }
