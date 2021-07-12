@@ -32,6 +32,18 @@
     <platform name="ios">
         <allow-intent href="itms:*" />
         <allow-intent href="itms-apps:*" />
+        <config-file mode="replace" parent="CFBundleShortVersionString" platform="ios" target="*-Info.plist">
+            <string>4.0.0</string>
+        </config-file>
+        <edit-config file="*-Info.plist" mode="replace" parent="CFBundleShortVersionString">
+            <string>40000</string>
+        </edit-config>
+        <config-file mode="replace" parent="CFBundleShortVersionString" platform="ios" target="Info.plist">
+            <string>4.0.0</string>
+        </config-file>
+        <edit-config file="Info.plist" mode="replace" parent="CFBundleShortVersionString">
+            <string>40000</string>
+        </edit-config>
         <icon height="57" src="resources/ios/icon/icon.png" width="57" />
         <icon height="114" src="resources/ios/icon/icon@2x.png" width="114" />
         <icon height="40" src="resources/ios/icon/icon-40.png" width="40" />
