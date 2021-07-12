@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!--<widget id="org.unidescription.npsapp" version="4.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">-->
-<widget id="com.montanab.unid" version="4.0.0" versionCode="40000" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="org.unidescription.npsapp" ios-CFBundleIdentifier="com.montanab.unid" ios-CFBundleVersion="4.0.0" version="4.0.0" versionCode="40000" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>UniD</name>
     <description>This app shares prototype audio description from dozens of National Park Service sites throughout the country, translating their paper brochures into acoustic media, designed for people who are blind, visually impaired, print dyslexic, or who prefer learning through sound.</description>
     <author email="joe@montanab.com" href="http://www.unidescription.org/">UniDescription</author>
