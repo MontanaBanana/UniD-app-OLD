@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="org.unidescription.npsapp" version="0.74" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="org.unidescription.npsapp" ios-CFBundleIdentifier="com.montanab.unid" version="0.74" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>Trails West</name>
     <description>Study for the SATs in a wagon trying to survive the trail out west!</description>
     <author email="jasonk@montanab.com" href="https://montanab.com/">Montana Banana</author>
