@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.trailswest.crew" version="0.74" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="org.unidescription.npsapp" version="0.74" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>Trails West</name>
     <description>Study for the SATs in a wagon trying to survive the trail out west!</description>
     <author email="jasonk@montanab.com" href="https://montanab.com/">Montana Banana</author>
@@ -75,8 +75,6 @@
         <splash height="480" src="resources/ios/splash/Default~iphone.png" width="320" />
         <splash height="2732" src="resources/ios/splash/Default@2x~universal~anyany.png" width="2732" />
     </platform>
-    <engine name="android" spec="7.0.0" />
     <engine name="browser" spec="5.0.4" />
-    <engine name="ios" spec="5.1.1" />
     <allow-navigation href="http://localhost:8100" sessionid="33f0ab64" />
 </widget>
