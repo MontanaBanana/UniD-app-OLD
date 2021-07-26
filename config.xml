@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="org.unidescription.npsapp" version="4.0" ios-CFBundleVersion="4.0" ios-CFBundleIdentifier="com.montanab.unid" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="org.unidescription.npsapp" version="4.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>UniD</name>
     <description>This app shares prototype audio description from dozens of National Park Service sites throughout the country, translating their paper brochures into acoustic media, designed for people who are blind, visually impaired, print dyslexic, or who prefer learning through sound.</description>
     <author email="joe@montanab.com" href="http://www.unidescription.org/">UniDescription</author>
@@ -13,6 +13,7 @@
     <allow-intent href="sms:*" />
     <allow-intent href="mailto:*" />
     <allow-intent href="geo:*" />
+    <preference name="phonegap-version" value="cli-9.0.0" />
     <preference name="webviewbounce" value="false" />
     <preference name="UIWebViewBounce" value="false" />
     <preference name="DisallowOverscroll" value="true" />
